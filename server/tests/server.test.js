@@ -5,7 +5,6 @@ const {ObjectID} = require('mongodb');
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
-
 const todos = [{
 	_id: new ObjectID(),
 	text: 'First test todo'
@@ -109,6 +108,51 @@ describe('POST /todos', () => {
 			// /todos/123
 			// should fail and trigger a 404.
 			// a 404 status code is expected.
+		});
+	});
+
+	describe('DELETE /todos/:id', () => {
+		it('should remove a todo', (done) => {
+			var hexId = todos[1]._id.toHexString();
+
+			request(app)
+				.delete(`/todos/${hexId}`)
+				.expect(200)
+				.expect((res) => {
+					expect(res.body.todo._id).toBe(hexId);
+				})
+				.end((err, res) => {
+					if (err) {
+						return done(err);
+					}
+
+					Todo.findById(hexId).then((todo) => {
+						expect(todo).toNotExist();
+						done();
+					}).catch((err) => done(err));
+
+					// query database using findById toNotExist
+					// expect(null).toNotExist(); - Pass in todo arg instead of null.
+						// if err, catch error.
+				});
+		});
+
+		it('should return 404 if todo not found', (done) => {
+
+			var hexId = new ObjectID().toHexString();
+			console.log(hexId);
+
+			request(app)
+			.delete(`/todos/${hexId}`)
+			.expect(404)
+			.end(done);			
+		});
+
+		it('should return 404 if object id is invalid', (done) => {
+			request(app)
+			.delete(`/todos/123`)
+			.expect(404)
+			.end(done);
 		});
 	});
 });
