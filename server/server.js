@@ -57,6 +57,8 @@ app.get('/todos/:id', (req, res) => {
 		res.status(400).send({});
 		console.log("Error");
 	});
+
+
 	// validate id using isValid
 		// if not valid, 404 - send back empty body
 
@@ -66,6 +68,37 @@ app.get('/todos/:id', (req, res) => {
 			// if no todo - send back 404 with empty body
 		// error
 			// 400 - not valid - send back nothing
+});
+
+app.delete('/todos/:id', (req, res) => {
+	// get the id
+	var id = req.params.id;
+	// validate id -> not valid? Return 404.
+	if(!mongoose.Types.ObjectId.isValid(id)){
+		res.status(404).send({});
+		console.log("invalid id");
+		return;
+	}
+	// remove todo by id
+	Todo.findByIdAndRemove(id).then((todo) => {
+		if(!todo){
+			res.status(400).send({});
+			console.log("Todo not found");
+			return;
+		} else if(todo){
+			res.status(200).send(todo);
+			console.log("success!");
+		}
+	}).catch((err) => {
+		res.status(400).send({});
+		console.log("Error!");
+	});
+		// success
+			// if no doc, send 404
+			// if doc, send doc back with 200
+		// error
+			// 400 with empty body
+
 });
 
 
