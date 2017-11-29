@@ -39,10 +39,6 @@ app.get('/todos', (req, res) => {
 app.get('/todos/:id', (req, res) => {
 	var id = req.params.id;
 
-	// if (!ObjectID.isValid(id)){
-	// 	return res.status(404).send();
-	// }
-
 	if(!mongoose.Types.ObjectId.isValid(id)){
 		res.status(404).send({});
 		return console.log("Invalid ID");
@@ -61,16 +57,6 @@ app.get('/todos/:id', (req, res) => {
 		console.log("Error");
 	});
 
-
-	// validate id using isValid
-		// if not valid, 404 - send back empty body
-
-	// findById
-		// success
-			// if todo - send it back
-			// if no todo - send back 404 with empty body
-		// error
-			// 400 - not valid - send back nothing
 });
 
 app.delete('/todos/:id', (req, res) => {
@@ -96,12 +82,6 @@ app.delete('/todos/:id', (req, res) => {
 		res.status(400).send({});
 		console.log("Error!");
 	});
-		// success
-			// if no doc, send 404
-			// if doc, send doc back with 200
-		// error
-			// 400 with empty body
-
 });
 
 app.patch('/todos/:id', (req, res) => {
@@ -111,7 +91,6 @@ app.patch('/todos/:id', (req, res) => {
 	if (!mongoose.Types.ObjectId.isValid(id)) {
 		return res.status(404).send();
 	}
-
 
 	if (_.isBoolean(body.completed) && body.completed) {
 		body.completedAt = new Date().getTime();
@@ -129,7 +108,31 @@ app.patch('/todos/:id', (req, res) => {
 	}).catch((err) => {
 		res.status(400).send();
 
-	})
+	});
+});
+
+// POST /users
+
+app.post('/users', (req, res) => {
+	var body = _.pick(req.body, ['email', 'password']);
+	// var user = new User({
+	// 	email: body.email,
+	// 	password: body.password
+	// });
+	// This is better.
+	var user = new User(body);
+
+	// User.findByToken
+	// user.generateAuthToken
+
+	user.save().then(() => {
+		return user.generateAuthToken();
+		// res.send(doc);
+	}).then((token) => {
+		res.header('x-auth', token).send(user);
+	}).catch((e) => {
+		res.status(400).send(e);
+	});
 });
 
 app.listen(port, () => {
